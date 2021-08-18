@@ -53,7 +53,7 @@ public class Blocks {
 		
 		DataStore dataStore = DataStoreFinder.getDataStore(map);
 		
-		SimpleFeatureSource featureSource = dataStore.getFeatureSource(dataStore.getTypeNames()[0]); 
+		SimpleFeatureSource featureSource = dataStore.getFeatureSource(dataStore.getTypeNames()[0]);
 		
 		SimpleFeatureType schema = featureSource.getSchema();
 
@@ -68,24 +68,24 @@ public class Blocks {
 		
 		try {
 			while( iterator.hasNext() ) {
-		         
+		
 				try {
 					
 					SimpleFeature feature = iterator.next();
-			    	String geoId = (String)feature.getAttribute("GEOID10");
-			         
-			    	Long areaLand = (Long) feature.getAttribute("ALAND10");
-			    	Long areaWater = (Long) feature.getAttribute("AWATER10");
-			         
+			    	String geoId = (String)feature.getAttribute("GEOID20");
+
+			    	Long areaLand = (Long) feature.getAttribute("ALAND20");
+			    	Long areaWater = (Long) feature.getAttribute("AWATER20");
+			
 			        Double percentLand = (double) (areaLand / (areaLand + areaWater));
-			         
+			
 			        Geometry geom = JTS.transform((Geometry)feature.getDefaultGeometry(),  transform);
 			        Point centroid = geom.getCentroid();
 			        if(preparedBoundary == null || (preparedBoundary.contains(centroid)))
 			        	lodesBlocks.put(geoId, new IndicatorItem(geoId, geom, percentLand));
 			        else
 			        	clipedFeatures++;
-			   
+			
 				}
 				catch(Exception e) {
 					skippedFeatures++;
@@ -96,7 +96,7 @@ public class Blocks {
 		}
 		finally {
 		     iterator.close();
-		} 
+		}
 		
 		dataStore.dispose();
 		
