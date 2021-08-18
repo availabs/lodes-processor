@@ -110,7 +110,7 @@ java \
 
 #### Creating the Jobs CSV file
 
-NOTE: The following assume
+NOTE: The following assumes Node.js is installed.
 
 ```sh
 ./jobs-json-to-csv.js > jobs.csv
