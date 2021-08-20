@@ -1,0 +1,56 @@
+#!/bin/bash
+
+set -e
+
+# USAGE: Run this in the directory where you want the county level shapefiles
+#        Two positional CLI args
+#          1st is the is the path to the county level census block shapefiles dir
+#          2nd is the is the path to the county level lodes csvs dir
+#
+# NOTE: Requires Java version 8
+
+SHPS_DIR="$1"
+CSVS_DIR="$2"
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+JAR_PATH="$DIR/../build/libs/avail-lodes-processor.jar"
+ATTR_GRPS_PATH="$DIR/../data/type_attribute_groups.csv"
+JSON_2_CSV="$DIR/jobs-json-to-csv.js"
+
+COUNTY_CODES="$(
+  comm -1 -2 \
+    <(
+        ls "$1" \
+          | sed 's/^tl_2020_//; s/_tabblock20$//'
+    ) \
+    <(
+        ls "$2" \
+          | sed 's/^ny_rac_S000_JT00_2018.//; s/.csv.gz$//'
+    ) \
+    | sed 's/\s//g'
+)"
+
+while read county_code; do
+  echo "-> $county_code"
+
+  tmpdir="$( mktemp -d )"
+
+  mkdir "$tmpdir/csvs"
+  cp "$CSVS_DIR/ny_rac_S000_JT00_2018.${county_code}.csv.gz" "$tmpdir/csvs/"
+  gunzip "$tmpdir/csvs/ny_rac_S000_JT00_2018.${county_code}.csv.gz"
+
+  mkdir "$tmpdir/shapes"
+  cp -r "$SHPS_DIR/tl_2020_${county_code}_tabblock20" "$tmpdir/shapes/"
+
+  java \
+    -jar "$JAR_PATH" \
+    -ag "$ATTR_GRPS_PATH" \
+    -a "$tmpdir/csvs" \
+    -s "$tmpdir/shapes/tl_2020_${county_code}_tabblock20" \
+    -i jobs -n jobs
+
+  "$JSON_2_CSV" jobs.json > "jobs.${county_code}.csv"
+
+  rm -rf "$tmpdir"
+  rm -f jobs.json
+done <<< "$COUNTY_CODES"

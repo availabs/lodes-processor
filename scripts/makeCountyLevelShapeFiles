@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# USAGE: Run this in the directory where you want the county level shapefiles
+#        Single positional CLI arg is the path to the full NYS Census Blocks Shapefile.
+
+SHP_PATH="/vsizip/$1"
+
+COUNTY_CODES="$(
+  ogr2ogr \
+    -F CSV /vsistdout/ \
+    "$SHP_PATH" \
+    -select 'COUNTYFP20' \
+  | sort -u \
+  | sed 's/"//g' \
+  | grep -v 'COUNTYFP20,'
+)"
+
+while read county_code; do
+  echo "-> $county_code"
+  ogr2ogr \
+    -F 'ESRI Shapefile' \
+    "tl_2020_36${county_code}_tabblock20" \
+    "$SHP_PATH" \
+    -where "COUNTYFP20='$county_code'" \
+    -nln "tl_2020_36${county_code}_tabblock20"
+done <<< "$COUNTY_CODES"
+

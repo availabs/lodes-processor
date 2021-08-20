@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# USAGE: Run this in the directory where you want the county level LODES CSVs/
+#        Single positional CLI arg is the path to the full LODES gzipped CSV.
+
+LODES_PATH="$1"
+
+COUNTY_CODES="$(
+  zcat "$LODES_PATH" \
+    | awk -F, 'BEGIN{ OFS="," } { if (NR > 1 ) { print substr($1, 1, 5) } }' \
+    | sort -u
+)"
+
+while read county_code; do
+  echo "-> $county_code"
+
+  zcat "$LODES_PATH" \
+    | awk -F, 'BEGIN{ OFS="," } { if (NR == 1 || $1 ~ /^'"$county_code"'/) { print } }' \
+    | gzip -9 \
+    > "ny_rac_S000_JT00_2018.$county_code.csv.gz"
+done <<< "$COUNTY_CODES"

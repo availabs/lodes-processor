@@ -113,7 +113,7 @@ java \
 NOTE: The following assumes Node.js is installed.
 
 ```sh
-./jobs-json-to-csv.js > jobs.csv
+./scripts/jobs-json-to-csv.js > jobs.csv
 ```
 
 ## Required Code Changes for 2020 Census Blocks
