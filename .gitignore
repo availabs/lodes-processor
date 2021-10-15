@@ -8,3 +8,8 @@
 data/csvs
 data/shapes
 build
+county_level_blocks_shps/
+county_level_jobs_csvs/
+county_level_lodes/
+spike/
+
